@@ -2,39 +2,46 @@ package client;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class client {
-    public static void main(String[] args) {
-        System.out.println("Client started");
+	static Scanner scan = new Scanner(System.in);
+	public static void main(String[] args) throws UnknownHostException, IOException {
+		String ip="localhost";
+		int port = 9999;
+		Socket s = new Socket(ip,port);
+        System.out.println("Just connected to " + s.getRemoteSocketAddress());
+        DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        out.writeUTF("Hello from " + s.getLocalSocketAddress());
+        out.writeUTF("again");
+        String i="0";
+        while(!i.equals("1")) {
+        System.out.println("Enter a message");
+        String str = scan.next();
+        out.writeUTF(str);
+        System.out.println("Enter 1 to exit");
+        i = scan.next();
+        out.writeUTF(i);
 
-        try {
-                Socket soc = new Socket("localhost",9999); // localhost -> (IP address of our server) cuz both client and server
-                // are on same machine localhost= IP add of our system = 127.0.0.1
-                // port no -> 2nd arg
-                BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-                // System.in -> takes only bytewise ip from user i.e deals with byte input format
-                // InputStreamReader -> converts those bytewise ip to stream of characters
-                // BufferedReader -> those stream of characters can be now used as a string ip
-                System.out.println("Enter a number");
-                int num = Integer.parseInt(userInput.readLine());
+        
+	}
 
-                PrintWriter out = new PrintWriter(soc.getOutputStream(),true);
-                out.println(num); // send the string read from user(str) to server
-                // PrintWriter object is used to get OutputStream so that we can send msgs to server
-                // PrintWriter obj has the habit to keep the stream to itself so if we do not write autoflush=true
-                // it will not send the string to server. To send the data we have to flush the obj only then it will send
-                // that string
+        
+        InputStream inFromServer = s.getInputStream();
+        DataInputStream in = new DataInputStream(inFromServer);
+        
+        System.out.println("Server says " + in.readUTF());
+        s.close();
+  
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                // to read the string sent from server
-                System.out.println(in.readLine());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+
+	}
 }
